@@ -13,8 +13,10 @@
   "license": "ISC",
   "dependencies": {
     "aedes": "^0.35.0",
+    "aedes-persistence-redis": "^5.1.0",
     "jsonwebtoken": "^8.3.0",
-    "mongodb": "^3.0.10"
+    "mongodb": "^3.0.10",
+    "mqemitter-redis": "^3.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -49,10 +49,28 @@ export function init({ Subscriptions }) {
 }
 
 export function connect(options) {
-	const a = aedes(options);
+	const a = aedes({
+		mq: require('mqemitter-redis')(),
+		persistence: require('aedes-persistence-redis')(),
+		...options
+	});
 
 	const server = net.createServer(a.handle);
 	server.listen(PORT, function() {
 		console.log('server listening on port', PORT);
+	});
+
+	aedes.on('clientError', function(client, err) {
+		console.log('client error', client.id, err.message);
+	});
+
+	aedes.on('publish', function(packet, client) {
+		if (client) {
+			console.log('message from client', client.id);
+		}
+	});
+
+	aedes.on('client', function(client) {
+		console.log('new client', client.id);
 	});
 }
