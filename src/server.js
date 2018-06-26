@@ -1,4 +1,3 @@
-import assert from 'assert';
 import { MongoClient } from 'mongodb';
 
 import { init, connect } from './index';

@@ -1,10 +1,13 @@
 import jwt from 'jsonwebtoken';
 import aedes from 'aedes';
 import net from 'net';
+import http from 'http';
+import ws from 'websocket-stream';
 
 import subscriptionRoutes from './routes';
 
-const PORT = process.env.MQTT_PORT || 1883;
+const MQTT_PORT = process.env.MQTT_PORT || 1883;
+const WS_PORT = process.env.WS_PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 export function init(models) {
@@ -19,7 +22,6 @@ export function init(models) {
 
 	const authenticate = function(client, username, password, callback) {
 		try {
-			console.log('username, password',username, password);
 			if (!username || password.toString()) {
 				return callback(null);
 			}
@@ -66,9 +68,18 @@ export function connect(options) {
 		...options
 	});
 
-	const server = net.createServer(a.handle);
-	server.listen(PORT, function() {
-		console.log('server listening on port', PORT);
+	const mqtt = net.createServer(a.handle);
+	mqtt.listen(MQTT_PORT, function() {
+		console.log('mqtt server listening on port', MQTT_PORT);
+	});
+
+	const httpServer = http.createServer();
+	ws.createServer({
+		server: httpServer
+	}, a.handle)
+
+	httpServer.listen(WS_PORT, function() {
+		console.log('ws server listening on port', WS_PORT);
 	});
 
 	a.on('clientError', function(client, err) {

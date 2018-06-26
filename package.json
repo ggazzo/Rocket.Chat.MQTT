@@ -18,7 +18,8 @@
     "jsonwebtoken": "^8.3.0",
     "mongodb": "^3.0.10",
     "mqemitter-redis": "^3.0.0",
-    "route-parser": "0.0.5"
+    "route-parser": "0.0.5",
+    "websocket-stream": "^5.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
