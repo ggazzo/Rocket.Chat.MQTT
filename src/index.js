@@ -2,10 +2,12 @@ import jwt from 'jsonwebtoken';
 import aedes from 'aedes';
 import net from 'net';
 
+import subscriptionRoutes from './routes';
+
 const PORT = process.env.MQTT_PORT || 1883;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
-export function init({ Subscriptions }) {
+export function init(models) {
 	const authorizePublish = function(
 		client,
 		packet,
@@ -17,10 +19,12 @@ export function init({ Subscriptions }) {
 
 	const authenticate = function(client, username, password, callback) {
 		try {
-			if (!username || password) {
+			console.log('username, password',username, password);
+			if (!username || password.toString()) {
 				return callback(null);
 			}
 			jwt.verify(username, JWT_SECRET, function(err, decoded) {
+				console.log('decoded ->', decoded);
 				client.user = decoded;
 				callback(err, !!client.user);
 			});
@@ -31,15 +35,22 @@ export function init({ Subscriptions }) {
 
 	const authorizeSubscribe = async function(client, sub, callback) {
 		try {
-			const { topic: rid } = sub;
+			// const { topic } = sub;
+			const authorized = subscriptionRoutes(client.user._id, sub, models);
+			if (!authorized) {
+				throw 'not authorized';
+			}
+			return callback(null, sub);
 
-			const subscription = await Subscriptions.findOne({
-				rid,
-				'u._id': client.user._id
-			}, {
-				_id: 1
-			});
-			callback(!!subscription, sub);
+			// const rid = topic.replace(/room-messages\//, '');
+
+			// const subscription = await Subscriptions.findOne({
+			// 	rid,
+			// 	'u._id': client.user._id
+			// }, {
+			// 	_id: 1
+			// });
+			// callback(!!subscription, sub);
 		} catch (error) {
 			console.log(error);
 			callback(error);
@@ -60,17 +71,17 @@ export function connect(options) {
 		console.log('server listening on port', PORT);
 	});
 
-	aedes.on('clientError', function(client, err) {
+	a.on('clientError', function(client, err) {
 		console.log('client error', client.id, err.message);
 	});
 
-	aedes.on('publish', function(packet, client) {
+	a.on('publish', function(packet, client) {
 		if (client) {
 			console.log('message from client', client.id);
 		}
 	});
 
-	aedes.on('client', function(client) {
+	a.on('client', function(client) {
 		console.log('new client', client.id);
 	});
 }
