@@ -63,8 +63,6 @@ export function init(models) {
 
 export function connect(options) {
 	const a = aedes({
-		mq: require('mqemitter-redis')(),
-		persistence: require('aedes-persistence-redis')(),
 		...options
 	});
 

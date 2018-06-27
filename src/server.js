@@ -11,8 +11,12 @@ MongoClient.connect(url,async function(err, client) {
 	const db = client.db(dbName);
 
 	const options = init({
-		Subscriptions: db.collection('rocketchat_subscription')
+		Subscriptions: db.collection("rocketchat_subscription")
 	});
 
-	connect(options);
+	connect({
+		...options,
+		mq: require("mqemitter-redis")(),
+		persistence: require("aedes-persistence-redis")()
+	});
 });
