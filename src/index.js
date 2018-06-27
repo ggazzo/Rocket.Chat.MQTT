@@ -38,7 +38,7 @@ export function init(models) {
 	const authorizeSubscribe = async function(client, sub, callback) {
 		try {
 			// const { topic } = sub;
-			const authorized = subscriptionRoutes(client.user._id, sub, models);
+			const authorized = await subscriptionRoutes(client, sub, models);
 			if (!authorized) {
 				throw 'not authorized';
 			}
