@@ -1,6 +1,6 @@
 {
-  "name": "rocketchat.streamer",
-  "version": "1.0.0",
+  "name": "rocket.chat.mqtt",
+  "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
