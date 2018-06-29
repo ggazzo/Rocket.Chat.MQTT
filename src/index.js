@@ -4,20 +4,29 @@ import net from 'net';
 import http from 'http';
 import ws from 'websocket-stream';
 
-import subscriptionRoutes from './routes';
+import subscriptionRoutes from './authorizations/subscribe';
+import publishRoutes from './authorizations/publish';
 
 const MQTT_PORT = process.env.MQTT_PORT || 1883;
 const WS_PORT = process.env.WS_PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 export function init(models) {
-	const authorizePublish = function(
+	const authorizePublish = async function(
 		client,
 		packet,
 		callback
 	) {
-		console.log(packet);
-		callback(false, true);
+		try {
+			const authorized = await publishRoutes(client, packet, models);
+			if (!authorized) {
+				throw 'not authorized';
+			}
+			return callback(null);
+		} catch (error) {
+			console.log(error);
+			callback(error);
+		}
 	};
 
 	const authenticate = function(client, username, password, callback) {
@@ -26,7 +35,7 @@ export function init(models) {
 				return callback(null);
 			}
 			jwt.verify(username, JWT_SECRET, function(err, decoded) {
-				console.log('decoded ->', decoded);
+				// console.log('decoded ->', decoded);
 				client.user = decoded;
 				callback(err, !!client.user);
 			});
@@ -43,16 +52,6 @@ export function init(models) {
 				throw 'not authorized';
 			}
 			return callback(null, sub);
-
-			// const rid = topic.replace(/room-messages\//, '');
-
-			// const subscription = await Subscriptions.findOne({
-			// 	rid,
-			// 	'u._id': client.user._id
-			// }, {
-			// 	_id: 1
-			// });
-			// callback(!!subscription, sub);
 		} catch (error) {
 			console.log(error);
 			callback(error);
