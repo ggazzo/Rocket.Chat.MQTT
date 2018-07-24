@@ -6,9 +6,12 @@ import ws from 'websocket-stream';
 
 import subscriptionRoutes from './authorizations/subscribe';
 import publishRoutes from './authorizations/publish';
+<<<<<<< HEAD
 
 import './usertyping';
 import './userpresence';
+=======
+>>>>>>> d2571e016aaba1405e598d3b1361a885b8d83573
 
 const MQTT_PORT = process.env.MQTT_PORT || 1883;
 const WS_PORT = process.env.WS_PORT || 8080;
@@ -27,9 +30,12 @@ export function init(models) {
 			}
 			return callback(null);
 		} catch (error) {
+<<<<<<< HEAD
 			if (!error.returnCode) {
 				error.returnCode = 4;
 			}
+=======
+>>>>>>> d2571e016aaba1405e598d3b1361a885b8d83573
 			console.log(error);
 			callback(error);
 		}
