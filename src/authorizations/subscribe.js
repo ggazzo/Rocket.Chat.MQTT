@@ -2,7 +2,7 @@ import Router from 'route-parser';
 
 const routes = [];
 
-const add = (path , cb) => routes.push([new Router(path), cb]);
+export const add = (path , cb) => routes.push([new Router(path), cb]);
 
 add(":userId/subscriptions-changed", (client, sub, { userId }) => {
   return userId === client.user._id;
@@ -15,10 +15,6 @@ add(":userId/rooms-changed", (client, sub, { userId }) => {
 add(":userId/notification", (client, sub, { userId }) => {
   return userId === client.user._id;
 });
-
-add('notify-room/:rid/typing', (client, sub, { rid }, { Subscriptions }) => {
-	return !!client.subscriptions[`room-messages/${rid}`];
-})
 
 add("permissions-changed", client => {
   return !!client.user._id;
@@ -40,7 +36,7 @@ export default async (client, sub, models) => {
 	for (let index = 0; index < routes.length; index++) {
 		const [path, method] = routes[index];
 		const tmp = path.match(sub.topic);
-        if(tmp && (await method(client, sub, tmp, models))) {
+		if(tmp && (await method(client, sub, tmp, models))) {
 			return true
 		}
 	}

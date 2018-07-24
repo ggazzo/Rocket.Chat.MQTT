@@ -2,11 +2,7 @@ import Router from "route-parser";
 
 const routes = [];
 
-const add = (path, cb) => routes.push([new Router(path), cb]);
-
-add("notify-room/:rid/typing", (client, packet, { rid }, { Subscriptions }) => {
-  return !!client.subscriptions[`room-messages/${rid}`];
-});
+export const add = (path, cb) => routes.push([new Router(path), cb]);
 
 export default async (client, sub, models) => {
   for (let index = 0; index < routes.length; index++) {

@@ -7,6 +7,9 @@ import ws from 'websocket-stream';
 import subscriptionRoutes from './authorizations/subscribe';
 import publishRoutes from './authorizations/publish';
 
+import './usertyping';
+import './userpresence';
+
 const MQTT_PORT = process.env.MQTT_PORT || 1883;
 const WS_PORT = process.env.WS_PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -24,6 +27,9 @@ export function init(models) {
 			}
 			return callback(null);
 		} catch (error) {
+			if (!error.returnCode) {
+				error.returnCode = 4;
+			}
 			console.log(error);
 			callback(error);
 		}
@@ -66,11 +72,13 @@ export function connect(options) {
 	});
 
 	const mqtt = net.createServer(a.handle);
+
 	mqtt.listen(MQTT_PORT, function() {
 		console.log('mqtt server listening on port', MQTT_PORT);
 	});
 
 	const httpServer = http.createServer();
+
 	ws.createServer({
 		server: httpServer
 	}, a.handle)
