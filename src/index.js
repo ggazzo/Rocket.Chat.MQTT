@@ -30,6 +30,7 @@ export function init(models) {
 			if (!error.returnCode) {
 				error.returnCode = 4;
 			}
+
 			console.log(error);
 			callback(error);
 		}
