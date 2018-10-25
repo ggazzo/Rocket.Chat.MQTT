@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+// import jwt from 'jsonwebtoken';
 import aedes from 'aedes';
 import net from 'net';
 import http from 'http';
@@ -9,11 +9,11 @@ import './userpresence';
 
 const MQTT_PORT = process.env.MQTT_PORT || 1883;
 const WS_PORT = process.env.WS_PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+// const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 
 export function connect(options) {
 	const a = aedes({
-		...options
+		...options,
 	});
 
 	const mqtt = net.createServer(a.handle);
@@ -25,14 +25,14 @@ export function connect(options) {
 	const httpServer = http.createServer();
 
 	ws.createServer({
-		server: httpServer
-	}, a.handle)
+		server: httpServer,
+	}, a.handle);
 
 	httpServer.listen(WS_PORT, function() {
 		console.log('ws server listening on port', WS_PORT);
 	});
 
-	if (process.env.DEBUG || process.env.DEBUG_MQTT){
+	if (process.env.DEBUG || process.env.DEBUG_MQTT) {
 		a.on('clientError', function(client, err) {
 			console.log('client error', client.id, err.message);
 		});

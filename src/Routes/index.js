@@ -1,4 +1,4 @@
-import * as Publish from './publish'
-import * as Subscriptions from './subscribe'
+import * as Publish from './publish';
+import * as Subscriptions from './subscribe';
 
-export {Publish, Subscriptions};
+export { Publish, Subscriptions };

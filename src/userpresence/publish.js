@@ -7,7 +7,7 @@ const encodeUserpresence = encoder('userpresence');
 
 const statusAllowed = [0, 1, 2];
 
-add("userpresence", ({ user }, packet, { }, { Subscriptions }) => {
+add('userpresence', ({ user }, packet) => {
 	if (!user || !user._id) {
 		return false;
 	}
@@ -23,7 +23,7 @@ add("userpresence", ({ user }, packet, { }, { Subscriptions }) => {
 
 	packet.payload = encodeUserpresence({ status });
 
-	packet.topic = `userpresence/${user._id}`;
+	packet.topic = `userpresence/${ user._id }`;
 
 	return true;
 });
