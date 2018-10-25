@@ -1,8 +1,20 @@
-import { MongoClient } from 'mongodb';
+import { ServiceBroker } from 'moleculer';
 
-import { init, connect } from './index';
+const metrics = process.env.METRICS || false;
 
-const url = process.env.MONGO_URL || 'mongodb://localhost:27017';
+const Services = new ServiceBroker({
+	logLevel: 'info',
+	sampleCount: 1,
+	namespace: 'services',
+	metrics,
+	transporter: 'TCP',
+	cacher: 'Memory',
+});
+
+import * as MqttServer from './index';
+import * as Routes from './Routes';
+
+const url = process.env.MONGO_URL || 'mongodb://localhost:3001';
 const dbName = process.env.MONGO_DB || 'meteor';
 
 const port = process.env.REDIS_PORT || 6379;
@@ -10,17 +22,43 @@ const host = process.env.REDIS_HOST || 'localhost';
 
 const config = { port, host };
 
-MongoClient.connect(url,async function(err, client) {
-	if (err) process.exit(1);
-
-	const db = client.db(dbName);
-
-	const options = init({
-		Subscriptions: db.collection("rocketchat_subscription")
-	});
-
-	connect({
-		...options,
+Services.start()
+// .then(() => Services.waitForServices(['authentication', 'authorization']))
+.then(() => {
+	MqttServer.connect({
+		authorizeSubscribe: async function (client, sub, callback) {
+			try {
+				// const { topic } = sub;
+				if (!(await Routes.Subscriptions.validate(client, sub, Services))) {
+					throw 'not authorized';
+				}
+				return callback(null, sub);
+			} catch (error) {
+				console.log(error)
+				callback(error);
+			}
+		},
+		authorizePublish: async function (client, packet, callback) {
+			return false
+		},
+		authenticate: async function (client, username, password, callback) {
+			try {
+				const user = await Services.call('authentication.login', { username, password });
+				if(user) {
+					client.user = user;
+					client.user._id = 'rocket.cat';
+					return callback(false, !!user)
+				}
+				// jwt.verify(username, JWT_SECRET, function (err, decoded) {
+				// 	// console.log('decoded ->', decoded);
+				// 	callback(err, !!client.user);
+				// });
+				callback(true);
+			} catch (error) {
+				console.log(error);
+				callback(error);
+			}
+		},
 		mq: require("mqemitter-redis")(config),
 		persistence: require("aedes-persistence-redis")(config)
 	});

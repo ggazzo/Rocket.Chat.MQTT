@@ -1,5 +1,5 @@
 import { decoder, encoder } from 'rocket.chat.proto';
-import { add } from '../authorizations/publish';
+import { add } from '../Routes/publish';
 
 const decodeUserpresence = decoder('userpresence');
 const encodeUserpresence = encoder('userpresence');

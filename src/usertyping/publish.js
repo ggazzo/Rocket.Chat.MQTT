@@ -1,6 +1,6 @@
 import { decoder, encoder } from 'rocket.chat.proto';
 
-import { add } from '../authorizations/publish';
+import { add } from '../Routes/publish';
 
 const decodeTyping = decoder('typing');
 const encodeTyping = encoder('typing');
