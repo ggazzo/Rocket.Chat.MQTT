@@ -1,6 +1,6 @@
 {
   "name": "rocket.chat.mqtt",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -8,8 +8,8 @@
     "build": "babel src/ -d lib/",
     "start": "nodemon --exec babel-node src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-		"_prepublish": "npm run build",
-		"lint": "eslint src"
+    "_prepublish": "npm run build",
+    "lint": "eslint src"
   },
   "author": "",
   "license": "ISC",
@@ -35,9 +35,6 @@
     "eslint": "^5.7.0",
     "flow-bin": "^0.75.0",
     "nodemon": "^1.18.4"
-	},
-  "bin": {
-    "rocketchat-streamer": "bin/test-module.js"
   },
   "bundledDependencies": [
     "aedes",
