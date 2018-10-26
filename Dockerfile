@@ -23,5 +23,6 @@ EXPOSE 1883
 EXPOSE 80
 
 RUN npm install
+RUN npm prune --production
 
-CMD ["node", "server.js"]
+CMD ["node", "index.js"]

@@ -1,11 +1,11 @@
 import { decoder, encoder } from 'rocket.chat.proto';
 
-import { add } from '../Routes/publish';
+import Publish from '../Routes/publish';
 
 const decodeTyping = decoder('typing');
 const encodeTyping = encoder('typing');
 
-add('notify-room/:rid/typing', (client, packet, { rid }) => {
+Publish.add('notify-room/:rid/typing', (client, packet, { rid }) => {
 	const { user } = client;
 
 	if (!user || !user._id) {

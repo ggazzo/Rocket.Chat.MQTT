@@ -1,50 +1,66 @@
-// import jwt from 'jsonwebtoken';
-import aedes from 'aedes';
-import net from 'net';
-import http from 'http';
-import ws from 'websocket-stream';
+import { ServiceBroker } from 'moleculer';
 
-import './usertyping';
-import './userpresence';
+const metrics = process.env.METRICS || false;
 
-const MQTT_PORT = process.env.MQTT_PORT || 1883;
-const WS_PORT = process.env.WS_PORT || 8080;
-// const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+const Services = new ServiceBroker({
+	logLevel: 'info',
+	sampleCount: 1,
+	namespace: 'services',
+	metrics,
+	transporter: 'TCP',
+	cacher: 'Memory',
+});
 
-export function connect(options) {
-	const a = aedes({
-		...options,
-	});
+import * as MqttServer from './server';
+import * as Routes from './Routes';
 
-	const mqtt = net.createServer(a.handle);
+const port = process.env.REDIS_PORT || 6379;
+const host = process.env.REDIS_HOST || 'localhost';
 
-	mqtt.listen(MQTT_PORT, function() {
-		console.log('mqtt server listening on port', MQTT_PORT);
-	});
+const config = { port, host };
 
-	const httpServer = http.createServer();
-
-	ws.createServer({
-		server: httpServer,
-	}, a.handle);
-
-	httpServer.listen(WS_PORT, function() {
-		console.log('ws server listening on port', WS_PORT);
-	});
-
-	if (process.env.DEBUG || process.env.DEBUG_MQTT) {
-		a.on('clientError', function(client, err) {
-			console.log('client error', client.id, err.message);
+export const start = () =>
+	Services.start()
+	// .then(() => Services.waitForServices(['authentication', 'authorization']))
+		.then(() => {
+			MqttServer.connect({
+				async authorizeSubscribe(client, sub, callback) {
+					try {
+						// const { topic } = sub;
+						if (!(await Routes.Subscriptions.validate(client, sub, Services))) {
+							throw 'not authorized';
+						}
+						return callback(null, sub);
+					} catch (error) {
+						console.log(error);
+						callback(error);
+					}
+				},
+				async authorizePublish(/* client, packet, callback*/) {
+					return false;
+				},
+				async authenticate(client, username, password, callback) {
+					try {
+						const user = await Services.call('authentication.login', { username, password });
+						if (user) {
+							client.user = user;
+							client.user._id = 'rocket.cat';
+							return callback(false, !!user);
+						}
+						// jwt.verify(username, JWT_SECRET, function (err, decoded) {
+						// 	// console.log('decoded ->', decoded);
+						// 	callback(err, !!client.user);
+						// });
+						callback(true);
+					} catch (error) {
+						console.log(error);
+						callback(error);
+					}
+				},
+				mq: require('mqemitter-redis')(config),
+				persistence: require('aedes-persistence-redis')(config),
+			});
 		});
-
-		a.on('publish', function(packet, client) {
-			if (client) {
-				console.log('message from client', client.id);
-			}
-		});
-
-		a.on('client', function(client) {
-			console.log('new client', client.id);
-		});
-	}
+if (require.main === module) { // standalone
+	start();
 }

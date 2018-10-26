@@ -1,5 +1,5 @@
 import { decoder, encoder } from 'rocket.chat.proto';
-import { add } from '../Routes/publish';
+import Publish from '../Routes/publish';
 
 const decodeUserpresence = decoder('userpresence');
 const encodeUserpresence = encoder('userpresence');
@@ -7,7 +7,7 @@ const encodeUserpresence = encoder('userpresence');
 
 const statusAllowed = [0, 1, 2];
 
-add('userpresence', ({ user }, packet) => {
+Publish.add('userpresence', ({ user }, packet) => {
 	if (!user || !user._id) {
 		return false;
 	}

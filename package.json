@@ -1,6 +1,6 @@
 {
   "name": "rocket.chat.mqtt",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -35,6 +35,9 @@
     "eslint": "^5.7.0",
     "flow-bin": "^0.75.0",
     "nodemon": "^1.18.4"
+	},
+  "bin": {
+    "rocketchat-streamer": "bin/test-module.js"
   },
   "bundledDependencies": [
     "aedes",

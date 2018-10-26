@@ -1,31 +1,32 @@
-import Router from 'route-parser';
+import Route from 'route-parser';
 
-const routes = [];
-
-export const add = (path, cb) => routes.push([new Router(path), cb]);
-
-add(':uid/subscriptions-changed', (client, sub, { uid }) => uid === client.user._id);
-
-add(':uid/rooms-changed', (client, sub, { uid }) => uid === client.user._id);
-
-add(':uid/notification', (client, sub, { uid }) => uid === client.user._id);
-
-add('permissions-changed', (client) => !!client.user._id);
-
-add(':rid/deleteMessage', (client, sub, { rid }) => !!client.subscriptions[`room-messages/${ rid }`]);
-
-add('room-messages/:rid', async({ user }, sub, { rid }, Services) => Services.call('authorization.canAccessRoom', { rid, uid: user._id }));
-
-add('$SYS/unsubscribe/:id', (uid, { id }) => uid === id);
-
-export const validate = async(client, sub, Service) => {
-	for (let index = 0; index < routes.length; index++) {
-		const [path, method] = routes[index];
-		const tmp = path.match(sub.topic);
-
-		if (tmp && (await method(client, sub, tmp, Service))) {
-			return true;
-		}
+export class Router {
+	constructor() {
+		this.routes = [];
 	}
-	return false;
-};
+	add(path, cb) {
+		this.routes.push([new Route(path), cb])
+	}
+	async validate(client, sub, models) {
+		for (let index = 0; index < routes.length; index++) {
+			const [path, method] = routes[index];
+			const tmp = path.match(sub.topic);
+			if (tmp && (await method(client, sub, tmp, models))) {
+				return true;
+			}
+		}
+		return false;
+	};
+}
+
+const subscriptions = new Router();
+
+subscriptions.add(':uid/subscriptions-changed', (client, sub, { uid }) => uid === client.user._id);
+subscriptions.add(':uid/rooms-changed', (client, sub, { uid }) => uid === client.user._id);
+subscriptions.add(':uid/notification', (client, sub, { uid }) => uid === client.user._id);
+subscriptions.add('permissions-changed', (client) => !!client.user._id);
+subscriptions.add(':rid/deleteMessage', (client, sub, { rid }) => !!client.subscriptions[`room-messages/${rid}`]);
+subscriptions.add('room-messages/:rid', async ({ user }, sub, { rid }, Services) => Services.call('authorization.canAccessRoom', { rid, uid: user._id }));
+subscriptions.add('$SYS/unsubscribe/:id', (uid, { id }) => uid === id);
+
+export default subscriptions;

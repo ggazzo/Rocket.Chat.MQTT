@@ -1,6 +1,6 @@
-import { add } from '../Routes/subscribe';
+import Subscriptions from '../Routes/subscribe';
 
-add('userpresence/:id', async(/* { user }, sub, { id }, { Subscriptions }*/) =>
+Subscriptions.add('userpresence/:id', async(/* { user }, sub, { id }, { Subscriptions }*/) =>
 	// TODO: improve this behavior
 	true
 );
