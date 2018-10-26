@@ -2,15 +2,6 @@ import { ServiceBroker } from 'moleculer';
 
 const metrics = process.env.METRICS || false;
 
-const Services = new ServiceBroker({
-	logLevel: 'info',
-	sampleCount: 1,
-	namespace: 'services',
-	metrics,
-	transporter: 'TCP',
-	cacher: 'Memory',
-});
-
 import * as MqttServer from './server';
 import * as Routes from './Routes';
 
@@ -19,10 +10,16 @@ const host = process.env.REDIS_HOST || 'localhost';
 
 const config = { port, host };
 
-export const start = () =>
-	Services.start()
-	// .then(() => Services.waitForServices(['authentication', 'authorization']))
-		.then(() => {
+export const createService = () => {
+
+	return new ServiceBroker({
+		logLevel: 'info',
+		sampleCount: 1,
+		namespace: 'services',
+		metrics,
+		transporter: 'TCP',
+		cacher: 'Memory',
+		started(Services) {
 			MqttServer.connect({
 				async authorizeSubscribe(client, sub, callback) {
 					try {
@@ -41,7 +38,7 @@ export const start = () =>
 				},
 				async authenticate(client, username, password, callback) {
 					try {
-						const user = await Services.call('authentication.login', { username, password });
+						const user = await Services.call('authentication.login', { username, password: password.toString('utf8') });
 						if (user) {
 							client.user = user;
 							client.user._id = 'rocket.cat';
@@ -60,7 +57,9 @@ export const start = () =>
 				mq: require('mqemitter-redis')(config),
 				persistence: require('aedes-persistence-redis')(config),
 			});
-		});
+		}
+	});
+}
 if (require.main === module) { // standalone
-	start();
+	createService().start();
 }

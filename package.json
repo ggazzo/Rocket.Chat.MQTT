@@ -1,6 +1,6 @@
 {
   "name": "rocket.chat.mqtt",
-  "version": "0.0.10",
+  "version": "0.0.13",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
